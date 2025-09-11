@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 import { TestDbModule } from './test-db/test-db.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { TestDbModule } from './test-db/test-db.module';
     }),
 
     TestDbModule,
+    UsuariosModule,
   ],
 })
 export class AppModule {}
