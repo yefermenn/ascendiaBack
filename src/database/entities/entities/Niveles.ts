@@ -22,6 +22,6 @@ export class Niveles {
   @Column("text", { name: "descripcion", nullable: true })
   descripcion: string | null;
 
-  @OneToMany(() => Usuarios, (usuarios) => usuarios.nivelActual2)
+  @OneToMany(() => Usuarios, (usuarios) => usuarios.nivelActual)
   usuarios: Usuarios[];
 }

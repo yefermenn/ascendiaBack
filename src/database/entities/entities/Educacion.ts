@@ -34,6 +34,34 @@ export class Educacion {
   @Column("date", { name: "fecha_fin", nullable: true })
   fechaFin: string | null;
 
+  // Campos nuevos para alinearse con el payload del frontend
+  @Column("character varying", {
+    name: "external_id",
+    nullable: true,
+    length: 100,
+  })
+  externalId: string | null;
+
+  @Column("character varying", {
+    name: "nivel",
+    nullable: true,
+    length: 100,
+  })
+  nivel: string | null;
+
+  @Column("character varying", {
+    name: "anio",
+    nullable: true,
+    length: 10,
+  })
+  anio: string | null;
+
+  @Column("text", { name: "descripcion", nullable: true })
+  descripcion: string | null;
+
+  @Column("character varying", { name: "url", nullable: true, length: 255 })
+  url: string | null;
+
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.educacions, {
     onDelete: "CASCADE",
   })

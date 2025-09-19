@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Param, Body, HttpStatus, HttpCode } from '@nestjs/common';
+import { AddExperienceDto } from './dto/add-experience.dto';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 
@@ -60,6 +61,16 @@ export class UsuariosController {
     return {
       success: true,
       data: await this.usuariosService.usuarioExiste(correo),
+    };
+  }
+
+  @Post('add-experience')
+  @HttpCode(HttpStatus.OK)
+  async addExperience(@Body() addExperienceDto: AddExperienceDto) {
+    const { email, amount } = addExperienceDto as any;
+    return {
+      success: true,
+      data: await this.usuariosService.addExperienceByEmail(email, amount),
     };
   }
 }

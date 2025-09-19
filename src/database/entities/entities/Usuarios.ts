@@ -3,22 +3,14 @@ import {
   Entity,
   Index,
   JoinColumn,
-  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Admin } from "./Admin";
-import { Certificaciones } from "./Certificaciones";
+import { Cursos } from "./Cursos";
 import { Educacion } from "./Educacion";
 import { ExperienciaLaboral } from "./ExperienciaLaboral";
-import { LogrosUsuario } from "./LogrosUsuario";
-import { Notificaciones } from "./Notificaciones";
-import { Personajes } from "./Personajes";
 import { Proyectos } from "./Proyectos";
-import { Seguidores } from "./Seguidores";
-import { Niveles } from "./Niveles";
-import { UsuariosRedes } from "./UsuariosRedes";
 
 @Index("usuarios_correo_key", ["correo"], { unique: true })
 @Index("usuarios_pkey", ["idUsuario"], { unique: true })
@@ -30,6 +22,20 @@ export class Usuarios {
 
   @Column("character varying", { name: "nombre", length: 100 })
   nombre: string;
+
+  @Column("character varying", {
+    name: "first_name",
+    nullable: true,
+    length: 100,
+  })
+  firstName: string | null;
+
+  @Column("character varying", {
+    name: "last_name",
+    nullable: true,
+    length: 100,
+  })
+  lastName: string | null;
 
   @Column("character varying", { name: "correo", unique: true, length: 100 })
   correo: string;
@@ -60,6 +66,44 @@ export class Usuarios {
   })
   fotoPerfil: string | null;
 
+  // Nuevo: URL directa de la foto según payload
+  @Column("character varying", {
+    name: "photo_url",
+    nullable: true,
+    length: 255,
+  })
+  photoUrl: string | null;
+
+  // Campo profesional
+  @Column("character varying", {
+    name: "professional_category",
+    nullable: true,
+    length: 100,
+  })
+  professionalCategory: string | null;
+
+  @Column("character varying", {
+    name: "professional_specialty",
+    nullable: true,
+    length: 150,
+  })
+  professionalSpecialty: string | null;
+
+  // Avatar
+  @Column("character varying", {
+    name: "avatar_gender",
+    nullable: true,
+    length: 50,
+  })
+  avatarGender: string | null;
+
+  @Column("character varying", {
+    name: "avatar_shirt_color",
+    nullable: true,
+    length: 20,
+  })
+  avatarShirtColor: string | null;
+
   @Column("character varying", {
     name: "rol",
     nullable: true,
@@ -71,52 +115,15 @@ export class Usuarios {
   @Column("boolean", { name: "estado", nullable: true, default: () => "true" })
   estado: boolean | null;
 
-  @OneToOne(() => Admin, (admin) => admin.idUsuario2)
-  admin: Admin;
-
-  @OneToMany(
-    () => Certificaciones,
-    (certificaciones) => certificaciones.idUsuario2
-  )
-  certificaciones: Certificaciones[];
+  @OneToMany(() => Cursos, (cursos) => cursos.idUsuario)
+  cursos: Cursos[];
 
   @OneToMany(() => Educacion, (educacion) => educacion.idUsuario)
   educacions: Educacion[];
 
-  @OneToMany(
-    () => ExperienciaLaboral,
-    (experienciaLaboral) => experienciaLaboral.idUsuario
-  )
+  @OneToMany(() => ExperienciaLaboral, (experienciaLaboral) => experienciaLaboral.idUsuario)
   experienciaLaborals: ExperienciaLaboral[];
-
-  @OneToMany(() => LogrosUsuario, (logrosUsuario) => logrosUsuario.idUsuario)
-  logrosUsuarios: LogrosUsuario[];
-
-  @OneToMany(
-    () => Notificaciones,
-    (notificaciones) => notificaciones.idUsuario2
-  )
-  notificaciones: Notificaciones[];
-
-  @OneToOne(() => Personajes, (personajes) => personajes.idUsuario2)
-  personajes: Personajes;
 
   @OneToMany(() => Proyectos, (proyectos) => proyectos.idUsuario2)
   proyectos: Proyectos[];
-
-  @OneToMany(() => Seguidores, (seguidores) => seguidores.idSeguido2)
-  seguidores: Seguidores[];
-
-  @OneToMany(() => Seguidores, (seguidores) => seguidores.idSeguidor2)
-  seguidores2: Seguidores[];
-
-  @ManyToOne(() => Niveles, (niveles) => niveles.usuarios, {
-    onDelete: "SET NULL",
-    onUpdate: "CASCADE",
-  })
-  @JoinColumn([{ name: "nivel_actual", referencedColumnName: "idNivel" }])
-  nivelActual2: Niveles;
-
-  @OneToMany(() => UsuariosRedes, (usuariosRedes) => usuariosRedes.idUsuario)
-  usuariosRedes: UsuariosRedes[];
 }

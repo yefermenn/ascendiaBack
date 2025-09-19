@@ -62,6 +62,13 @@ export class Proyectos {
   })
   xpOtorgado: number | null;
 
+  // Permitimos almacenar múltiples URLs como JSON string
+  @Column("text", { name: "urls", nullable: true })
+  urls: string | null;
+
+  @Column("character varying", { name: "external_id", nullable: true, length: 100 })
+  externalId: string | null;
+
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.proyectos, {
     onDelete: "CASCADE",
   })
