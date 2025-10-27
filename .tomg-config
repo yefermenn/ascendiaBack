@@ -1,0 +1,37 @@
+[
+  {
+    "resultsPath": "./src/database/entities",
+    "pluralizeNames": true,
+    "noConfigs": false,
+    "convertCaseFile": "pascal",
+    "convertCaseEntity": "pascal",
+    "convertCaseProperty": "camel",
+    "convertEol": "CRLF",
+    "propertyVisibility": "none",
+    "lazy": false,
+    "activeRecord": false,
+    "generateConstructor": false,
+    "customNamingStrategyPath": "",
+    "relationIds": false,
+    "strictMode": "none",
+    "skipSchema": false,
+    "indexFile": false,
+    "exportType": "named"
+  },
+  {
+    "host": "127.0.0.1",
+    "port": 5432,
+    "databaseNames": [
+      "ascendia"
+    ],
+    "user": "postgres",
+    "password": "CAmi.lo_123",
+    "databaseType": "postgres",
+    "schemaNames": [
+      "public"
+    ],
+    "ssl": false,
+    "skipTables": [],
+    "onlyTables": []
+  }
+]
