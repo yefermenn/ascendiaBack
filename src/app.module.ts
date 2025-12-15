@@ -26,7 +26,7 @@ import { TestDbModule } from './test-db/test-db.module';
         entities: [join(__dirname, '**', '*.{ts,js}')],
 
         // NO sincronizar para evitar modificar tu BD
-        synchronize: false,
+        synchronize: true,
         autoLoadEntities: true,
         logging: true, // opcional para depuración
       }),
