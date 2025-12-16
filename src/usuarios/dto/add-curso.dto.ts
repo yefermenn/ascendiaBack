@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsUrl, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsUrl, IsNumber, IsNotEmpty } from 'class-validator';
 
 export class AddCursoDto {
   @IsOptional()
@@ -25,7 +25,7 @@ export class AddCursoDto {
   @IsUrl()
   url?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsNumber()
-  ramaId?: number;
+  ramaId: number;
 }

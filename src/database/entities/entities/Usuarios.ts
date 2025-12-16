@@ -7,10 +7,10 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Cursos } from "./Cursos";
 import { Educacion } from "./Educacion";
 import { ExperienciaLaboral } from "./ExperienciaLaboral";
 import { Proyectos } from "./Proyectos";
+import { Ramas } from "./Ramas";
 
 @Index("usuarios_correo_key", ["correo"], { unique: true })
 @Index("usuarios_pkey", ["idUsuario"], { unique: true })
@@ -115,8 +115,8 @@ export class Usuarios {
   @Column("boolean", { name: "estado", nullable: true, default: () => "true" })
   estado: boolean | null;
 
-  @OneToMany(() => Cursos, (cursos) => cursos.idUsuario)
-  cursos: Cursos[];
+  @OneToMany(() => Ramas, (ramas) => ramas.usuario)
+  ramas: Ramas[];
 
   @OneToMany(() => Educacion, (educacion) => educacion.idUsuario)
   educacions: Educacion[];

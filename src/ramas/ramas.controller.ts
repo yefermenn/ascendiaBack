@@ -43,4 +43,16 @@ export class RamasController {
       data: await this.ramasService.obtenerPorId(Number(id)),
     };
   }
+
+  /**
+   * Obtener ramas de un usuario
+   * GET /ramas/usuario/:usuarioId
+   */
+  @Get('usuario/:usuarioId')
+  async obtenerPorUsuario(@Param('usuarioId') usuarioId: number) {
+    return {
+      success: true,
+      data: await this.ramasService.obtenerPorUsuario(Number(usuarioId)),
+    };
+  }
 }

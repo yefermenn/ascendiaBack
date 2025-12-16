@@ -1,5 +1,4 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Usuarios } from "./Usuarios";
 import { Ramas } from "./Ramas";
 
 @Index("cursos_pkey", ["idCurso"], { unique: true })
@@ -26,11 +25,7 @@ export class Cursos {
   @Column("character varying", { name: "url", nullable: true, length: 255 })
   url: string | null;
 
-  @ManyToOne(() => Usuarios, (usuarios) => usuarios.educacions, { onDelete: "CASCADE" })
-  @JoinColumn([{ name: "id_usuario", referencedColumnName: "idUsuario" }])
-  idUsuario: Usuarios;
-
-  @ManyToOne(() => Ramas, (ramas) => ramas.cursos, { onDelete: "SET NULL" })
+  @ManyToOne(() => Ramas, (ramas) => ramas.cursos, { onDelete: "CASCADE" })
   @JoinColumn([{ name: "id_rama", referencedColumnName: "idRama" }])
   rama: Ramas;
 }

@@ -117,21 +117,10 @@ export class UsuariosService {
         }
       }
 
-      // Cursos
-      if (experience?.courses && Array.isArray(experience.courses)) {
-        for (const c of experience.courses) {
-          const curso = manager.create(Cursos, {
-            externalId: c.id || null,
-            titulo: c.title,
-            institucion: c.institution || null,
-            anio: c.year || null,
-            descripcion: c.description || null,
-            url: c.url || null,
-            idUsuario: usuarioGuardado,
-          });
-          await manager.save(curso);
-        }
-      }
+      // Cursos: Ahora los cursos deben asociarse a ramas
+      // Las ramas deben crearse primero y luego los cursos se agregan a esas ramas
+      // Por lo tanto, no se crean cursos directamente en el registro de usuario
+      // Use el endpoint POST /usuarios/:id/cursos después de crear ramas
 
       // Proyectos
       if (experience?.projects && Array.isArray(experience.projects)) {
@@ -156,14 +145,14 @@ export class UsuariosService {
 
   async obtenerTodos() {
     return await this.usuariosRepository.find({
-      relations: ['certificaciones', 'educacions', 'experienciaLaborals', 'proyectos'],
+      relations: ['certificaciones', 'educacions', 'experienciaLaborals', 'proyectos', 'ramas'],
     });
   }
 
   async obtenerPorId(id: number) {
     const usuario = await this.usuariosRepository.findOne({
       where: { idUsuario: id },
-      relations: ['certificaciones', 'educacions', 'experienciaLaborals', 'proyectos'],
+      relations: ['certificaciones', 'educacions', 'experienciaLaborals', 'proyectos', 'ramas'],
     });
 
     if (!usuario) {
@@ -178,7 +167,8 @@ export class UsuariosService {
     const usuario = await this.usuariosRepository.findOne({
       where: { correo },
       relations: [
-        'cursos',
+        'ramas',
+        'ramas.cursos',
         'educacions',
         'experienciaLaborals',
         'proyectos',
@@ -188,6 +178,19 @@ export class UsuariosService {
     if (!usuario) {
       throw new BadRequestException('Usuario no encontrado');
     }
+
+    // Aplanar todos los cursos de todas las ramas
+    const todosCursos = usuario.ramas?.flatMap(rama => 
+      rama.cursos?.map((c) => ({
+        id: c.externalId,
+        title: c.titulo,
+        institution: c.institucion,
+        year: c.anio,
+        description: c.descripcion ?? '',
+        url: c.url,
+        rama: rama.nombre,
+      })) || []
+    ) || [];
 
     return {
       level: usuario.nivelActual,
@@ -216,6 +219,20 @@ export class UsuariosService {
         shirtColor: usuario.avatarShirtColor,
       },
 
+      ramas: usuario.ramas?.map((rama) => ({
+        id: rama.idRama,
+        nombre: rama.nombre,
+        cursos: rama.cursos?.map((c) => ({
+          id: c.externalId,
+          idCurso: c.idCurso,
+          title: c.titulo,
+          institution: c.institucion,
+          year: c.anio,
+          description: c.descripcion ?? '',
+          url: c.url,
+        })) || [],
+      })) || [],
+
       experience: {
         education: usuario.educacions.map((e) => ({
           id: e.externalId,
@@ -239,14 +256,7 @@ export class UsuariosService {
           url: w.url,
         })),
 
-        courses: usuario.cursos.map((c) => ({
-          id: c.externalId,
-          title: c.titulo,
-          institution: c.institucion,
-          year: c.anio,
-          description: c.descripcion ?? '',
-          url: c.url,
-        })),
+        courses: todosCursos,
 
         projects: usuario.proyectos.map((p) => ({
           id: p.externalId,
@@ -289,13 +299,18 @@ export class UsuariosService {
       throw new BadRequestException('Usuario no encontrado');
     }
 
-    let rama: Ramas | undefined = undefined;
-    if (dto.ramaId) {
-      const ramaEncontrada = await this.ramasRepository.findOne({ where: { idRama: dto.ramaId } });
-      if (!ramaEncontrada) {
-        throw new BadRequestException('Rama no encontrada');
-      }
-      rama = ramaEncontrada;
+    const rama = await this.ramasRepository.findOne({ 
+      where: { idRama: dto.ramaId },
+      relations: ['usuario'],
+    });
+    
+    if (!rama) {
+      throw new BadRequestException('Rama no encontrada');
+    }
+
+    // Validar que la rama pertenezca al usuario
+    if (rama.usuario.idUsuario !== idUsuario) {
+      throw new BadRequestException('La rama no pertenece a este usuario');
     }
 
     const nuevoCurso = this.cursosRepository.create({
@@ -305,8 +320,7 @@ export class UsuariosService {
       anio: dto.anio || null,
       descripcion: dto.descripcion || null,
       url: dto.url || null,
-      idUsuario: usuario,
-      ...(rama && { rama }),
+      rama: rama,
     });
 
     const guardado = await this.cursosRepository.save(nuevoCurso);
