@@ -7,6 +7,7 @@ import { Educacion } from '../database/entities/entities/Educacion';
 import { ExperienciaLaboral } from '../database/entities/entities/ExperienciaLaboral';
 import { Proyectos } from '../database/entities/entities/Proyectos';
 import { Cursos } from '../database/entities/entities/Cursos';
+import { Ramas } from '../database/entities/entities/Ramas';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { Cursos } from '../database/entities/entities/Cursos';
       ExperienciaLaboral,
       Proyectos,
       Cursos,
+      Ramas,
     ]),
   ],
   controllers: [UsuariosController],

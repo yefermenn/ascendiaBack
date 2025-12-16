@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -7,7 +7,13 @@ import { Educacion } from '../database/entities/entities/Educacion';
 import { ExperienciaLaboral } from '../database/entities/entities/ExperienciaLaboral';
 import { Proyectos } from '../database/entities/entities/Proyectos';
 import { Cursos } from '../database/entities/entities/Cursos';
+import { Ramas } from '../database/entities/entities/Ramas';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
+import { LoginDto } from './dto/login.dto';
+import { AddEducationDto } from './dto/add-education.dto';
+import { AddCursoDto } from './dto/add-curso.dto';
+import { AddExperienciaDto } from './dto/add-experiencia.dto';
+import { AddProyectoDto } from './dto/add-proyecto.dto';
 
 @Injectable()
 export class UsuariosService {
@@ -22,6 +28,8 @@ export class UsuariosService {
     private proyectosRepository: Repository<Proyectos>,
     @InjectRepository(Cursos)
     private cursosRepository: Repository<Cursos>,
+    @InjectRepository(Ramas)
+    private ramasRepository: Repository<Ramas>,
   ) {}
 
   async usuarioExiste(correo:string){
@@ -250,6 +258,114 @@ export class UsuariosService {
     };
   }
 
+  async agregarEducacionAUsuario(idUsuario: number, dto: AddEducationDto) {
+    const usuario = await this.usuariosRepository.findOne({ where: { idUsuario } });
+    if (!usuario) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    const nuevaEducacion = this.educacionRepository.create({
+      externalId: dto.externalId ?? null,
+      institucion: dto.institucion ?? null,
+      tituloObtenido: dto.tituloObtenido ?? null,
+      nivel: dto.nivel ?? null,
+      anio: dto.anio ?? null,
+      descripcion: dto.descripcion ?? null,
+      url: dto.url ?? null,
+      idUsuario: usuario,
+    });
+
+    const guardada = await this.educacionRepository.save(nuevaEducacion);
+    return {
+      success: true,
+      message: 'Educación agregada correctamente',
+      data: guardada,
+    };
+  }
+
+  async agregarCursoAUsuario(idUsuario: number, dto: AddCursoDto) {
+    const usuario = await this.usuariosRepository.findOne({ where: { idUsuario } });
+    if (!usuario) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    let rama: Ramas | undefined = undefined;
+    if (dto.ramaId) {
+      const ramaEncontrada = await this.ramasRepository.findOne({ where: { idRama: dto.ramaId } });
+      if (!ramaEncontrada) {
+        throw new BadRequestException('Rama no encontrada');
+      }
+      rama = ramaEncontrada;
+    }
+
+    const nuevoCurso = this.cursosRepository.create({
+      externalId: dto.externalId || null,
+      titulo: dto.titulo || '',
+      institucion: dto.institucion || null,
+      anio: dto.anio || null,
+      descripcion: dto.descripcion || null,
+      url: dto.url || null,
+      idUsuario: usuario,
+      ...(rama && { rama }),
+    });
+
+    const guardado = await this.cursosRepository.save(nuevoCurso);
+    return {
+      success: true,
+      message: 'Curso agregado correctamente',
+      data: guardado,
+    };
+  }
+
+  async agregarExperienciaAUsuario(idUsuario: number, dto: AddExperienciaDto) {
+    const usuario = await this.usuariosRepository.findOne({ where: { idUsuario } });
+    if (!usuario) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    const nuevaExperiencia = this.experienciaRepository.create({
+      externalId: dto.externalId || null,
+      cargo: dto.cargo || null,
+      empresa: dto.empresa || null,
+      tipo: dto.tipo || null,
+      startYear: dto.startYear || null,
+      endYear: dto.endYear || null,
+      descripcion: dto.descripcion || null,
+      area: dto.area || null,
+      url: dto.url || null,
+      idUsuario: usuario,
+    });
+
+    const guardada = await this.experienciaRepository.save(nuevaExperiencia);
+    return {
+      success: true,
+      message: 'Experiencia laboral agregada correctamente',
+      data: guardada,
+    };
+  }
+
+  async agregarProyectoAUsuario(idUsuario: number, dto: AddProyectoDto) {
+    const usuario = await this.usuariosRepository.findOne({ where: { idUsuario } });
+    if (!usuario) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    const nuevoProyecto = this.proyectosRepository.create({
+      externalId: dto.externalId || null,
+      titulo: dto.titulo || '',
+      descripcion: dto.descripcion || null,
+      urls: dto.urls ? JSON.stringify(dto.urls) : null,
+      idUsuario: usuario.idUsuario,
+    });
+
+    const guardado = await this.proyectosRepository.save(nuevoProyecto);
+    return {
+      success: true,
+      message: 'Proyecto agregado correctamente',
+      data: guardado,
+    };
+  }
+
     async addExperienceByEmail(correo: string, amount: number) {
       const usuario = await this.usuariosRepository.findOne({ where: { correo } });
 
@@ -278,6 +394,40 @@ export class UsuariosService {
         correo: saved.correo,
         nivelActual: saved.nivelActual,
         xpTotal: saved.xpTotal,
+      };
+    }
+
+    async login(loginDto: LoginDto) {
+      const { correo, contraseña } = loginDto;
+
+      // Validar que el correo existe
+      const usuario = await this.usuariosRepository.findOne({ where: { correo } });
+
+      if (!usuario) {
+        throw new UnauthorizedException('El correo no existe');
+      }
+
+      // Comparar contraseña con bcrypt (desencriptar/validar)
+      const contraseñaValida = await bcrypt.compare(contraseña, usuario.contraseAHash);
+
+      if (!contraseñaValida) {
+        throw new UnauthorizedException('Contraseña incorrecta');
+      }
+
+      // Generar número aleatorio
+      const numeroAleatorio = Math.floor(Math.random() * 1000000);
+
+      return {
+        success: true,
+        message: 'Login exitoso',
+        usuario: {
+          idUsuario: usuario.idUsuario,
+          nombre: usuario.nombre,
+          correo: usuario.correo,
+          nivelActual: usuario.nivelActual,
+          xpTotal: usuario.xpTotal,
+        },
+        token: numeroAleatorio,
       };
     }
 }
